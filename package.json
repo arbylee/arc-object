@@ -1,0 +1,28 @@
+{
+  "name": "arc-object",
+  "version": "1.0.0",
+  "description": "An object convenience subclass",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://anyuzer@github.com/anyuzer/arc-object.git"
+  },
+  "keywords": [
+    "native",
+    "object"
+  ],
+  "author": "Ian Reid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anyuzer/arc-object/issues"
+  },
+  "homepage": "https://github.com/anyuzer/arc-object#readme",
+  "dependencies": {
+    "arc-is": "^1.0.0",
+    "arc-array": "^1.0.0",
+    "arc-check": "^1.0.0"
+  }
+}
