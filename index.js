@@ -4,6 +4,7 @@ var Check = require('arc-check');
 var ArcArray = require('arc-array');
 
 class ArcObject extends Object {
+    //Allow for an Object literal argument to be passed in that gets case to the ArcObject
     constructor(_obj){
         super();
         if(is(_obj) === 'object'){
@@ -16,73 +17,62 @@ class ArcObject extends Object {
         }
     }
 
+    //Turn the object into an immutable object (deep)
     deepFreeze(){
-        this.each.call(this,function(_k,_v){
+        this.each(function(_k,_v){
+            var $this = this;
             if(is(_v) === 'object'){
-                this.deepFreeze.call(_v);
+                $this[_k] = ArcObject.wrap(_v);
+                $this[_k].deepFreeze();
             }
-        });
+        },this);
         this.freeze.call(this);
         return this;
     }
 
-    //Turn the native object into an immutable object (shallow)
+    //Turn the object into an immutable object (shallow)
     freeze() {
         var obj = this;
         obj = Object.freeze(obj);
         return obj;
     }
 
+    //Iterate over the object
     each(_f,_thisArg){
-        var $this,keys,key,eachBreak;
-        if(is(_f) === 'function'){
-            $this = _thisArg || this;
-            keys = Object.keys(this);
-            for(let i=0;i<keys.length;i++){
-                key = keys[i];
-                _f.call($this,key,this[key],_break);
-                if(eachBreak){
-                    break;
-                }
-            }
+        if(is(_f) !== 'function'){
+            throw new TypeError('ArcObject.each first argument must be a valid function');
         }
-        function _break(){
-            eachBreak = true;
+
+        //Declare
+        var $this,keys,key,length,eachBreak;
+
+        //Our context
+        $this = _thisArg || this;
+
+        //Etc
+        keys = Object.keys(this);
+        length = keys.length;
+
+        //Iterate
+        for(let i=0;i<length;i++){
+            key = keys[i];
+            if(_f.call($this,key,this[key],this) === false){
+                break;
+            }
         }
     }
 
+    //Lazy
     count(){
         return Object.keys(this).length;
     }
-
-    //A convenient way to binding multiple NPMs to an object
-    requires(_mixed){
-        var $this = this;
-        switch(is(_mixed,true)){
-            case 'ArcObject':
-                _mixed.each(function(_alias,_require){
-                    $this[_alias] = require(_require);
-                });
-                break;
-
-            case 'ArcArray':
-                _mixed.each(function(_require){
-                    $this[_require] = require(_require);
-                });
-                break;
-
-            case 'object':
-                this.requires(new ArcObject(_mixed));
-                break;
-
-            case 'array':
-                this.requires(new ArcArray(_mixed));
-                break;
-        }
-        return $this;
+    
+    //Shortcut to get keys as an ArcArray
+    keys(){
+        return new ArcArray(...Object.keys(this));
     }
 
-    //Obviously this is wrong, as we shouldn't truse an objects order for anything, but sometimes we do anyways. Likewise Map is really what we should be using
+    //Obviously this is wrong, as we shouldn't trust an objects order for anything, but sometimes we do anyways. Likewise Map is really what we should be using
     ksort(){
         var $this = this;
         var keys = $this.keys();
@@ -97,12 +87,9 @@ class ArcObject extends Object {
             $this[_key] = _val;
         });
         return $this;
-    }
+    }    
 
-    keys(){
-        return new ArcArray(...Object.keys(this));
-    }
-
+    //Remove the last item in the object
     pop(){
         var $this,lastKey,lastVal;
         $this = this;
@@ -114,6 +101,7 @@ class ArcObject extends Object {
         }
     }
 
+    //Get the last item in the object
     last(){
         var lastKey = this.keys().pop();
         if(lastKey !== undefined){
@@ -121,6 +109,7 @@ class ArcObject extends Object {
         }
     }
 
+    //Remove the first item in the object
     shift(){
         var $this,firstKey,firstVal;
         $this = this;
@@ -132,6 +121,7 @@ class ArcObject extends Object {
         }
     }
 
+    //Get the first item in the object
     first(){
         var firstKey = this.keys().shift();
         if(firstKey !== undefined){
@@ -139,11 +129,7 @@ class ArcObject extends Object {
         }
     }
 
-    copy(){
-        var $target = (is(arguments[arguments.length-1]) === 'boolean' ? {} : this);
-        return new ArcObject(_copy($target));
-    }
-
+    //Remove values that evaluate to true through ArcCheck
     filterVals(_Check){
         if(is(_Check,true) !== 'ArcCheck'){
             throw new TypeError('ArcObject.filterVals expects a valid ArcCheck object as an argument');
@@ -156,21 +142,25 @@ class ArcObject extends Object {
                 delete $this[key];
             }
         }
+        return $this;
     }
 
+    //Remove values that have keys that evaluate to true through ArcCheck
     filterKeys(_Check){
-        if(is(_Check,true) !== 'Filter'){
+        if(is(_Check,true) !== 'ArcCheck'){
             throw new TypeError('ArcObject.filterKeys expects a valid /Arc/Filter object as an argument');
         }
         var $this = this;
         var keys = $this.keys();
         keys.each(function(_key){
-            if(_Filter.val(_key)){
+            if(_Check.val(_key)){
                 delete $this[_key];
             }
         });
+        return $this;
     }
 
+    //Remove values that have values that match a value of the filterArray
     quickFilterVals(_filterArray){
         if(is(_filterArray) !== 'array'){
             throw new TypeError('ArcObject.quickFilterVals expects a valid array of values to check against');
@@ -179,21 +169,28 @@ class ArcObject extends Object {
         C.addInclude(function(_val){
             return (_filterArray.indexOf(_val) !== -1 ? true : false);
         });
-        this.filterVals(C);
+        return this.filterVals(C);
     }
 
+    //Remove values that have keys that match a value of the filterArray
     quickFilterKeys(_filterArray){
         if(is(_filterArray) !== 'array'){
             throw new TypeError('ArcObject.quickFilterKeys expects a valid array of values to check against');
         }
         var C = new Check();
-        C.addCallback(function(_val){
+        C.addInclude(function(_val){
             return (_filterArray.indexOf(_val) !== -1 ? true : false);
         });
-        this.filterKeys(C);
+        return this.filterKeys(C);
     }
 
-    check(){
+    //To string: [object ArcObject]
+    toString(){
+        return '[object '+this.constructor.name+']';
+    }
+
+    //Take dynamic arguments and check that they're initialized objects
+    static check(){
         for(var i=0;i<arguments.length;i++){
             if(is(arguments[i]) !== 'object'){
                 return false;
@@ -201,11 +198,8 @@ class ArcObject extends Object {
         }
         return true;
     }
-
-    toString(){
-        return '[object '+this.constructor.name+']';
-    }
-
+    
+    //When called binds the .arc() method to the global native object type, which in turn returns an ArcObject from a native object
     static bindNative(){
         Object.defineProperty(Object.prototype,'arc',{
             enumerable: false,
@@ -213,79 +207,27 @@ class ArcObject extends Object {
             writable: false,
             value: function(){
                 var $this = this;
+                if(is($this,true) === 'ArcObject'){
+                    return $this;
+                }
                 $this = new ArcObject($this);
                 return $this;
             }
         });
     }
+
+    //Safely return an ArcObject or cast a native object as an ArcObject
+    static wrap(_obj){
+        if(is(_obj,true) === 'ArcObject'){
+            return _obj;
+        }
+        else if(is(_obj) === 'object'){
+            return new ArcObject(_obj);
+        }
+        else{
+            throw new TypeError('Cannot wrap value. Must evaluate to a native object.');
+        }
+    }
 }
 
 module.exports = ArcObject;
-
-//Does this even work? I can't remember
-function _copy(_obj){
-    var copier,circleCache,$return;
-
-    copier = {'object':copyObject,'array':copyArray,'date':copyDate,'regExp':copyRegExp};
-    circleCache = {'array':[],'object':[]};
-    $return = copyObject(_obj);
-
-    circleCache = null;
-    return $return;
-
-    function checkCircle(_ref,_type){
-        var i,$ref;
-        for(i=0;i<circleCache[_type].length;i++){
-            if(circleCache[_type][i].ref === _ref){
-                $ref = circleCache[_type][i].copy;
-                break;
-            }
-        }
-        if($ref === undefined){
-            $ref = copier[_type](_ref);
-        }
-        return $ref;
-    }
-
-    function copyObject(_obj){
-        var prop,type,newObj = {};
-
-        circleCache.object.push({'ref':_obj,'copy':newObj});
-        for(prop in _obj){
-            if(_obj.hasOwnProperty(prop)){
-                if(_obj[prop] !== _obj){
-                    type = is(_obj[prop]);
-                    newObj[prop] = (copier[type] ? checkCircle(_obj[prop],type) : _obj[prop]);
-                }
-                else{
-                    newObj[prop] = newObj;
-                }
-            }
-        }
-        return newObj;
-    }
-
-    function copyArray(_array){
-        var i,type,$newArray = [];
-
-        circleCache.array.push({'ref':_array,'copy':$newArray});
-        for(i=0;i<_array.length;i++){
-            if(_array[i] !== _array){
-                type = is(_array[i]);
-                $newArray.push((copier[type] ? checkCircle(_array[i],type) : _array[i]));
-            }
-            else{
-                $newArray.push($newArray);
-            }
-        }
-        return $newArray;
-    }
-
-    function copyDate(_date){
-        return new Date(_date.getTime());
-    }
-
-    function copyRegExp(_regExp){
-        return new RegExp(_regExp);
-    }
-}
