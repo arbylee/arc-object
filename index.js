@@ -213,6 +213,10 @@ class ArcObject extends Object {
         return this.filterKeys(C);
     }
 
+    constant(_key,_val,_enumerable){
+        ArcObject.defineConstant(this,_key,_val,_enumerable);
+    }
+
     //To string: [object ArcObject]
     toString(){
         return '[object '+this.constructor.name+']';
@@ -256,6 +260,15 @@ class ArcObject extends Object {
         else{
             throw new TypeError('Cannot wrap value. Must evaluate to a native object.');
         }
+    }
+
+    static defineConstant(_obj,_key,_val,_enumerable){
+        Object.defineProperty(_obj, _key, {
+            value: _val,
+            writable : false,
+            enumerable : (_enumerable === false ? false : true),
+            configurable : false
+        });
     }
 }
 

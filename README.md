@@ -152,6 +152,9 @@ alpha.deepFreeze();
 alpha.z.x = 'aardvark'; //This will fail to set the a property
 ```
 
+### .constant(key:Mixed,val:Mixed[,enumerable:Boolean])
+Alias of static ArcObject.defineConstant()
+
 ### .quickFilterKeys(values:Array) / .quickFilterVals(values:Array)
 Remove indexes from object based on either matching keys, or matching values.
 ```js
@@ -181,6 +184,17 @@ var users = {
     id2:'bbb',
     id3:'ccc'
 }.arc(); //This returns an ArcObject object
+```
+
+### ArcObject.defineConstant(obj:Object,key:Mixed,val:Mixed [,enumerable:Boolean])
+This is a convenience static method that does the following:
+```js
+Object.defineProperty(obj, key, {
+    value: val,
+    writable : false,
+    enumerable : (enumerable === false ? false : true),
+    configurable : false
+});
 ```
 
 ## Testing
