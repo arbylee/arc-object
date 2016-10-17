@@ -44,7 +44,7 @@ class ArcObject extends Object {
         }
 
         //Declare
-        var $this,keys,key,length,eachBreak;
+        var $this,keys,key,length;
 
         //Our context
         $this = _thisArg || this;
@@ -60,6 +60,35 @@ class ArcObject extends Object {
                 break;
             }
         }
+    }
+
+    returnEach(_f,_returnArg,_falseBreak){
+        if(is(_f) !== 'function'){
+            throw new TypeError('ArcObject.each first argument must be a valid function');
+        }
+        _falseBreak = (_falseBreak === false ? false : true);
+
+        //Declare
+        var $this,keys,key,length,cbReturn;
+
+        //Our context
+        $this = this;
+
+        //Etc
+        keys = Object.keys(this);
+        length = keys.length;
+
+        //Iterate
+        for(let i=0;i<length;i++){
+            key = keys[i];
+
+            cbReturn = _f.call($this,key,this[key],_returnArg);
+            if(cbReturn === false && _falseBreak){
+                break;
+            }
+            _returnArg = cbReturn || _returnArg;
+        }
+        return _returnArg;
     }
 
     //Lazy
@@ -78,7 +107,7 @@ class ArcObject extends Object {
         var keys = $this.keys();
         var copy = new ArcObject;
         keys.sort();
-        keys.each(function(_key){
+        keys.each(function(_index,_key){
             copy[_key] = $this[_key];
             delete $this[_key];
         });
@@ -152,7 +181,7 @@ class ArcObject extends Object {
         }
         var $this = this;
         var keys = $this.keys();
-        keys.each(function(_key){
+        keys.each(function(_index,_key){
             if(_Check.val(_key)){
                 delete $this[_key];
             }

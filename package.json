@@ -4,7 +4,7 @@
   "description": "An object convenience subclass",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "tap test/*.js --coverage --coverage-report=html"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/anyuzer/arc-object#readme",
   "dependencies": {
-    "arc-array": "^2.0.3",
+    "arc-array": "3.2.0",
     "arc-check": "^1.0.2",
     "arc-is": "^1.0.3"
   },

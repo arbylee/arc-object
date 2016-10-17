@@ -69,6 +69,24 @@ users.each(function(_k,_v){
 });
 ```
 
+### .returnEach(callback:Function,returnArg:Mixed[,falseBreak:Boolean])
+Like .each except takes in an argument, passes it into each callback, and mutates it accordingly based on whether or not anything was returned.
+
+By default, returning false breaks the iteration, but this can be optionally switched off by passing in false as the third argument.
+
+```js
+//Example of returning returnEach
+var users = new ArcObject({'a':'aardvark','b':'brad','c':'documents are boring','d':'Andy'});
+var aUsers = users.returnEach(function(_key,_val,_aUsers){
+    if(_val.charAt(0) === 'a'){
+        _aUsers.push(_val);
+    }
+    return _aUsers;
+},[]);
+
+//aUsers contains ['aardvark','Andy']
+```
+
 ### .ksort()
 Rebuild an object by keys (alphabetical)
 ```js
