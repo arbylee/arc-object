@@ -223,7 +223,7 @@ class ArcObject extends Object {
     }
 
     static duckInstanceOf(_primary,_duck){
-        if(is(_primary) !== 'object' || is(_duck) !== 'object'){
+        if(is(_primary) !== is(_duck)){
             return false;
         }
         var prop;
