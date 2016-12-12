@@ -166,6 +166,35 @@ alpha.quickFilterVals([false,undefined]); //Object is reduced to {a:'a'}
 ### .filterKeys(filter:ArcCheck) / .filterVals(filter:ArcCheck)
 Use an ArcCheck object to perform complex evaluation on a key or value to decide whether or not it should be removed from the object (see ArcCheck for more details on use).
 
+### ArcObject.duckInstanceOf(primary:Object,duck:Object)
+Compare two objects to see if the duck object has the same properties bound as functions as the primary object
+```js
+//Example class
+class Test{
+    getSomething(){}
+}
+
+//Two seperate instantiations
+var primary = new Test;
+primary.id = "one thing";
+
+var duck = new Test;
+duck.id = "another thing";
+
+//Comparison
+(primary == duck); //false
+(primary === duck); //false
+ArcObject.duckInstanceOf(primary,duck); //true
+
+//Change the interface on the primary, so the duck no longer matches
+primary.newFunc = function(){};
+ArcObject.duckInstanceOf(primary,duck); //false
+
+//But reverse the order...
+ArcObject.duckInstanceOf(duck,primary); //true (because we are not comparing if the interfaces are identical, only if the secondary has the same interface as the primary)
+
+```
+
 ### ArcObject.check(...args)
 This is a static method that can be used to check whether or not an object chain has been instantiated.
 ```js

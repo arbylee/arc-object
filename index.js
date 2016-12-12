@@ -222,6 +222,21 @@ class ArcObject extends Object {
         return '[object '+this.constructor.name+']';
     }
 
+    static duckInstanceOf(_primary,_duck){
+        if(is(_primary) !== 'object' || is(_duck) !== 'object'){
+            return false;
+        }
+        var prop;
+        for(prop in _primary){
+            if(_primary.hasOwnProperty(prop) && is(_primary[prop]) === 'function'){
+                if(is(_duck[prop]) !== 'function'){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     //Take dynamic arguments and check that they're initialized objects
     static check(){
         for(var i=0;i<arguments.length;i++){
