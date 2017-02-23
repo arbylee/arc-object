@@ -2,6 +2,7 @@
 var is = require('arc-is');
 var Check = require('arc-check');
 var ArcArray = require('arc-array');
+const deepcopy = require('deepcopy');
 
 class ArcObject extends Object {
     //Allow for an Object literal argument to be passed in that gets case to the ArcObject
@@ -284,6 +285,10 @@ class ArcObject extends Object {
             enumerable : (_enumerable === false ? false : true),
             configurable : false
         });
+    }
+
+    static copy(_obj){
+        return deepcopy(_obj);
     }
 }
 
