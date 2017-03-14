@@ -92,6 +92,36 @@ class ArcObject extends Object {
         return _returnArg;
     }
 
+    //An implementation closer to array.reduce
+    reduce(_f,_lastArg,_falseBreak){
+        if(is(_f) !== 'function'){
+            throw new TypeError('ArcObject.each first argument must be a valid function');
+        }
+        _falseBreak = (_falseBreak === false ? false : true);
+
+        //Declare
+        var $this,keys,key,length,cbReturn;
+
+        //Our context
+        $this = this;
+
+        //Etc
+        keys = Object.keys(this);
+        length = keys.length;
+
+        //Iterate
+        for(let i=0;i<length;i++){
+            key = keys[i];
+
+            cbReturn = _f.call($this,_lastArg,this[key],key);
+            if(cbReturn === false && _falseBreak){
+                break;
+            }
+            _lastArg = cbReturn || _lastArg;
+        }
+        return _lastArg;
+    }
+
     //Lazy
     count(){
         return Object.keys(this).length;
