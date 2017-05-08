@@ -63,7 +63,9 @@ class ArcObject extends Object {
         }
     }
 
+    //DEPRECATED
     returnEach(_f,_returnArg,_falseBreak){
+        console.log('ArcObject.returnEach is deprecated and will be removed in v2. Use ArcObject.reduce instead.');
         if(is(_f) !== 'function'){
             throw new TypeError('ArcObject.each first argument must be a valid function');
         }
