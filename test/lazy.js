@@ -12,9 +12,21 @@ tap.test('ArcObject.lazyMethods',function(_test){
     _test.same(testObj.keys(),['z','y','x']);
     
     //Test Check for checking object instantiation
-    var x = {};
-    _test.equal(ArcObject.check(x),true);
-    _test.equal(ArcObject.check(x,x.a),false);
+    const x = new ArcObject({
+        test:{
+            a:{
+                deep:{
+                    value:"success"
+                }
+            }
+        }
+    });
+
+    let success = x.deepGet('test','a','deep','value')
+    let fail = x.deepGet('test','a','deep','failure');
+
+    _test.equal(success,'success');
+    _test.equal(fail,undefined);
     
     //End
     _test.end();

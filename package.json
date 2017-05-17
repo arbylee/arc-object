@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/anyuzer/arc-object#readme",
   "dependencies": {
-    "arc-array": "3.2.1",
+    "arc-array": "4.0.1",
     "arc-check": "1.0.3",
     "arc-is": "1.0.5",
     "deepcopy": "^0.6.3"

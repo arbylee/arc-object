@@ -7,7 +7,7 @@ $ npm install arc-object --save
 ```
 
 ## Features
-* each() with break functionality
+* forEach() with break functionality
 * complex key/value filtering (using ArcCheck)
 * quick filtering
 * fauxrray like functions
@@ -18,10 +18,12 @@ $ npm install arc-object --save
     * last()
     * shift()
     * pop()
-    * reduce
+    * reduce()
+* deepGet() to safely look for and return a value from a nested structure
 * native convenience binding (if desired)
 * freeze() and deepFreeze() (object freezing)
 * failure safe object instantiation checking
+* duck typing interfaces of two objects
 
 ## Basic Usage
 The following example creates a new ArcObject, filters out false/empty/null values, keysorts, and breaks on a specific value
@@ -37,7 +39,7 @@ alpha.quickFilterVals([false,undefined]);
 alpha.ksort();
 
 //Iterate
-alpha.each(function(_key,_val){
+alpha.forEach(function(_val,_key){
     if(_val === 'aardvark'){
         //Break when we hit aardvark
         return false;
@@ -50,12 +52,12 @@ alpha.each(function(_key,_val){
 ### new ArcObject(Object)
 Create a new `ArcObject` object. Requires `new`
 
-### .each(callback:Function[, thisContext:Object])
+### .forEach(callback:Function[, thisContext:Object])
 Loop over an object index, calling callback each iteration. Break when `false` is explicitly returned.
 
 **callback** is a required function that is called with 3 arguments passed in
-* key: the index key of the current iteration
 * value: the value of the current iteration
+* key: the index key of the current iteration
 * reference: the object reference being iterated over
 
 **thisContext** is an optional object that will be available inside of the callback as `this` if set, otherwise defaulting to the original object.
@@ -63,7 +65,7 @@ Loop over an object index, calling callback each iteration. Break when `false` i
 ```js
 //Example of breaking each
 var users = new ArcObject({'a':'aardvark','b':'brad','c':'documents are boring'});
-users.each(function(_k,_v){
+users.forEach(function(_v,_k){
     if(_v === 'brad'){
         return false;
     }
@@ -168,7 +170,17 @@ alpha.quickFilterVals([false,undefined]); //Object is reduced to {a:'a'}
 ### .filterKeys(filter:ArcCheck) / .filterVals(filter:ArcCheck)
 Use an ArcCheck object to perform complex evaluation on a key or value to decide whether or not it should be removed from the object (see ArcCheck for more details on use).
 
-### ArcObject.duckInstanceOf(primary:Object,duck:Object)
+### ArcObject.deepGet(...args)
+This is method that can be used to safely fetch a nested key path inside of an object. Returns the value found, or undefined
+```js
+//An descriptive object with sub data
+var user = new ArcObject({'details':{'id':750}});
+user.deepGet('details','id'); //Returns 750
+user.deepGet('details','name'); //Returns undefined
+```
+
+
+### ArcObject.duckType(primary:Object,duck:Object)
 Compare two objects to see if the duck object has the same properties bound as functions as the primary object
 ```js
 //Example class
@@ -186,24 +198,15 @@ duck.id = "another thing";
 //Comparison
 (primary == duck); //false
 (primary === duck); //false
-ArcObject.duckInstanceOf(primary,duck); //true
+ArcObject.duckCheck(primary,duck); //true
 
 //Change the interface on the primary, so the duck no longer matches
 primary.newFunc = function(){};
-ArcObject.duckInstanceOf(primary,duck); //false
+ArcObject.duckCheck(primary,duck); //false
 
 //But reverse the order...
-ArcObject.duckInstanceOf(duck,primary); //true (because we are not comparing if the interfaces are identical, only if the secondary has the same interface as the primary)
+ArcObject.duckCheck(duck,primary); //true (because we are not comparing if the interfaces are identical, only if the secondary has the same interface as the primary)
 
-```
-
-### ArcObject.check(...args)
-This is a static method that can be used to check whether or not an object chain has been instantiated.
-```js
-//An descriptive object with sub data
-var user = {'details':{'id':false,'address':undefined}};
-ArcObject.check(user,user.details);                         //Returns true
-ArcObject.check(user,user.details,user.details.address);    //Returns false
 ```
 
 ### ArcObject.nativeBind()

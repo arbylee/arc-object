@@ -9,9 +9,9 @@ class ArcObject extends Object {
     constructor(_obj){
         super();
         if(is(_obj) === 'object'){
-            var keys,prop;
+            let keys,prop;
             keys = Object.keys(_obj);
-            for(var i = 0; i < keys.length; i++){
+            for(let i = 0; i < keys.length; i++){
                 prop = keys[i];
                 this[prop] = _obj[prop];
             }
@@ -20,8 +20,8 @@ class ArcObject extends Object {
 
     //Turn the object into an immutable object (deep)
     deepFreeze(){
-        this.each(function(_k,_v){
-            var $this = this;
+        this.forEach(function(_v,_k){
+            const $this = this;
             if(is(_v) === 'object'){
                 $this[_k] = ArcObject.wrap(_v);
                 $this[_k].deepFreeze();
@@ -33,13 +33,13 @@ class ArcObject extends Object {
 
     //Turn the object into an immutable object (shallow)
     freeze() {
-        var obj = this;
+        let obj = this;
         obj = Object.freeze(obj);
         return obj;
     }
 
     //Iterate over the object
-    each(_f,_thisArg){
+    forEach(_f,_thisArg){
         if(is(_f) !== 'function'){
             throw new TypeError('ArcObject.each first argument must be a valid function');
         }
@@ -57,41 +57,10 @@ class ArcObject extends Object {
         //Iterate
         for(let i=0;i<length;i++){
             key = keys[i];
-            if(_f.call($this,key,this[key],this) === false){
+            if(_f.call($this,this[key],key,this) === false){
                 break;
             }
         }
-    }
-
-    //DEPRECATED
-    returnEach(_f,_returnArg,_falseBreak){
-        console.log('ArcObject.returnEach is deprecated and will be removed in v2. Use ArcObject.reduce instead.');
-        if(is(_f) !== 'function'){
-            throw new TypeError('ArcObject.each first argument must be a valid function');
-        }
-        _falseBreak = (_falseBreak === false ? false : true);
-
-        //Declare
-        var $this,keys,key,length,cbReturn;
-
-        //Our context
-        $this = this;
-
-        //Etc
-        keys = Object.keys(this);
-        length = keys.length;
-
-        //Iterate
-        for(let i=0;i<length;i++){
-            key = keys[i];
-
-            cbReturn = _f.call($this,key,this[key],_returnArg);
-            if(cbReturn === false && _falseBreak){
-                break;
-            }
-            _returnArg = cbReturn || _returnArg;
-        }
-        return _returnArg;
     }
 
     //An implementation closer to array.reduce
@@ -128,7 +97,7 @@ class ArcObject extends Object {
     count(){
         return Object.keys(this).length;
     }
-    
+
     //Shortcut to get keys as an ArcArray
     keys(){
         return new ArcArray(...Object.keys(this));
@@ -140,20 +109,20 @@ class ArcObject extends Object {
         var keys = $this.keys();
         var copy = new ArcObject;
         keys.sort();
-        keys.each(function(_index,_key){
+        keys.forEach(function(_key){
             copy[_key] = $this[_key];
             delete $this[_key];
         });
 
-        copy.each(function(_key,_val){
+        copy.forEach(function(_val,_key){
             $this[_key] = _val;
         });
         return $this;
-    }    
+    }
 
     //Remove the last item in the object
     pop(){
-        var $this,lastKey,lastVal;
+        let $this,lastKey,lastVal;
         $this = this;
         lastKey = $this.keys().pop();
         if(lastKey !== undefined){
@@ -165,7 +134,7 @@ class ArcObject extends Object {
 
     //Get the last item in the object
     last(){
-        var lastKey = this.keys().pop();
+        let lastKey = this.keys().pop();
         if(lastKey !== undefined){
             return this[lastKey];
         }
@@ -173,7 +142,7 @@ class ArcObject extends Object {
 
     //Remove the first item in the object
     shift(){
-        var $this,firstKey,firstVal;
+        let $this,firstKey,firstVal;
         $this = this;
         firstKey = $this.keys().shift();
         if(firstKey !== undefined){
@@ -185,7 +154,7 @@ class ArcObject extends Object {
 
     //Get the first item in the object
     first(){
-        var firstKey = this.keys().shift();
+        let firstKey = this.keys().shift();
         if(firstKey !== undefined){
             return this[firstKey];
         }
@@ -196,10 +165,10 @@ class ArcObject extends Object {
         if(is(_Check,true) !== 'ArcCheck'){
             throw new TypeError('ArcObject.filterVals expects a valid ArcCheck object as an argument');
         }
-        var $this = this;
-        var keys = $this.keys();
-        for(var i=0;i<keys.length;i++){
-            var key = keys[i];
+        const $this = this;
+        const keys = $this.keys();
+        for(let i=0;i<keys.length;i++){
+            let key = keys[i];
             if(_Check.val($this[key])){
                 delete $this[key];
             }
@@ -212,9 +181,9 @@ class ArcObject extends Object {
         if(is(_Check,true) !== 'ArcCheck'){
             throw new TypeError('ArcObject.filterKeys expects a valid /Arc/Filter object as an argument');
         }
-        var $this = this;
-        var keys = $this.keys();
-        keys.each(function(_index,_key){
+        const $this = this;
+        const keys = $this.keys();
+        keys.forEach(function(_key){
             if(_Check.val(_key)){
                 delete $this[_key];
             }
@@ -227,7 +196,7 @@ class ArcObject extends Object {
         if(is(_filterArray) !== 'array'){
             throw new TypeError('ArcObject.quickFilterVals expects a valid array of values to check against');
         }
-        var C = new Check();
+        const C = new Check();
         C.addInclude(function(_val){
             return (_filterArray.indexOf(_val) !== -1 ? true : false);
         });
@@ -239,7 +208,7 @@ class ArcObject extends Object {
         if(is(_filterArray) !== 'array'){
             throw new TypeError('ArcObject.quickFilterKeys expects a valid array of values to check against');
         }
-        var C = new Check();
+        const C = new Check();
         C.addInclude(function(_val){
             return (_filterArray.indexOf(_val) !== -1 ? true : false);
         });
@@ -255,11 +224,11 @@ class ArcObject extends Object {
         return '[object '+this.constructor.name+']';
     }
 
-    static duckInstanceOf(_primary,_duck){
+    static duckType(_primary,_duck){
         if(is(_primary) !== is(_duck)){
             return false;
         }
-        var prop;
+        let prop;
         for(prop in _primary){
             if(_primary.hasOwnProperty(prop) && is(_primary[prop]) === 'function'){
                 if(is(_duck[prop]) !== 'function'){
@@ -271,13 +240,15 @@ class ArcObject extends Object {
     }
 
     //Take dynamic arguments and check that they're initialized objects
-    static check(){
-        for(var i=0;i<arguments.length;i++){
-            if(is(arguments[i]) !== 'object'){
-                return false;
+    deepGet(){
+        let lastObj = this;
+        for(let i=0;i<arguments.length;i++){
+            if(lastObj[arguments[i]] === undefined){
+                return undefined;
             }
+            lastObj = lastObj[arguments[i]];
         }
-        return true;
+        return lastObj;
     }
     
     //When called binds the .arc() method to the global native object type, which in turn returns an ArcObject from a native object
@@ -287,7 +258,7 @@ class ArcObject extends Object {
             configurable: false,
             writable: false,
             value: function(){
-                var $this = this;
+                let $this = this;
                 if(is($this,true) === 'ArcObject'){
                     return $this;
                 }
